@@ -48,6 +48,17 @@ def build_daily_report(day: str, events, rules: RuleSet) -> DailyReport:
     return report
 
 
+FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
+def safe_cell(value):
+    """Neutraliza injeção de fórmula: texto vindo do arquivo importado que começa
+    com = + - @ (ou tab/CR) recebe um apóstrofo, para o Excel tratá-lo como texto."""
+    if isinstance(value, str) and value.startswith(FORMULA_PREFIXES):
+        return "'" + value
+    return value
+
+
 def to_xlsx(report: DailyReport) -> bytes:
     from openpyxl import Workbook
     from openpyxl.styles import Font
@@ -76,7 +87,7 @@ def to_xlsx(report: DailyReport) -> bytes:
         for c in rk[1]:
             c.font = bold
         for i, r in enumerate(report.ranking, 1):
-            rk.append([i, r["veiculo"], r["total"], *[r[t] for t in EVENT_TYPES]])
+            rk.append([i, safe_cell(r["veiculo"]), r["total"], *[r[t] for t in EVENT_TYPES]])
 
         hr = wb.create_sheet("Por hora")
         hr.append(["Hora", "Ocorrências"])

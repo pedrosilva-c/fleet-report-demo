@@ -191,3 +191,28 @@ def test_api_rejects_bad_files(client):
 def test_index_and_static_are_served(client):
     assert "Fleet Report Demo" in client.get("/").text
     assert client.get("/static/app.js").status_code == 200
+
+
+# ---------- segurança ----------
+
+def test_xlsx_neutralizes_formula_injection(client):
+    data = csv_bytes([{"data_hora": "2026-01-05 08:00", "veiculo": "=HYPERLINK(\"http://x\")", "motorista": "M",
+                       "tipo_evento": "velocidade", "valor": "120"}])
+    assert client.post("/api/imports", files={"file": ("f.csv", data, "text/csv")}).status_code == 201
+    wb = load_workbook(io.BytesIO(client.get("/api/reports/daily/2026-01-05.xlsx").content))
+    cell = wb["Ranking por veículo"]["B2"]
+    assert cell.data_type == "s" and cell.value.startswith("'=")
+
+
+def test_cross_origin_writes_are_blocked(client):
+    data = csv_bytes(generate_rows(DAY, 1, 5, invalid_rows=False))
+    res = client.post("/api/imports", files={"file": ("a.csv", data, "text/csv")},
+                      headers={"Origin": "https://site-malicioso.example"})
+    assert res.status_code == 403
+    assert client.post("/api/imports/1/revert", headers={"Sec-Fetch-Site": "cross-site"}).status_code == 403
+    ok = client.post("/api/imports", files={"file": ("a.csv", data, "text/csv")}, headers={"Origin": "http://testserver"})
+    assert ok.status_code == 201
+
+
+def test_unknown_host_header_is_rejected(client):
+    assert client.get("/api/rules", headers={"Host": "rebind.example"}).status_code == 400

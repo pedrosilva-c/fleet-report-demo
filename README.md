@@ -73,20 +73,21 @@ Variáveis opcionais: `FLEETDEMO_DB` (caminho do banco SQLite, padrão `fleetdem
 .\.venv\Scripts\python.exe -m pytest
 ```
 
-**16 testes OK (11/11/2026).** Eles cobrem:
+**19 testes OK (11/11/2026).** Eles cobrem:
 
 - determinismo do gerador e uso só de identificadores fictícios;
 - limite inclusivo e validação do arquivo de regras;
 - rejeição de cada tipo de linha inválida, CSV com `;` ou `,` e vírgula decimal, XLSX, colunas ausentes e formato não suportado;
 - arquivo repetido, arquivos sobrepostos, reversão idempotente;
 - contagem do relatório e "sem dados" ≠ zero;
+- segurança: injeção de fórmula neutralizada no XLSX, escrita entre origens bloqueada (403) e cabeçalho `Host` desconhecido recusado (400);
 - API de ponta a ponta: importação, 409 no arquivo repetido, relatório JSON, XLSX com 3 abas, PDF válido, 422 em dia inválido, reversão, 404 em lote inexistente, 413 para arquivo acima do limite.
 
 A interface web também foi testada manualmente no Chromium: importação da amostra (240 aceitas e 5 rejeitadas com os motivos), relatório, downloads e nenhum erro no console.
 
 ## Limitações
 
-- Demonstração local, **sem autenticação**: não exponha na rede.
+- Demonstração local, **sem autenticação**: não exponha na rede. Como proteção mínima, só aceita `Host` 127.0.0.1/localhost (contra DNS rebinding), recusa requisições de escrita vindas de outra origem (contra CSRF) e prefixa com apóstrofo os textos importados que começam com `= + - @` antes de gravá-los no XLSX (contra injeção de fórmula).
 - Sem fuso horário: os horários são tratados como locais.
 - Três tipos de evento fixos (`velocidade`, `frenagem`, `marcha_lenta`); só os limites são configuráveis.
 - A interface é propositalmente simples (HTML e JavaScript sem framework), para manter a demo sem etapa de build.

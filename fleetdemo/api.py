@@ -12,7 +12,9 @@ import re
 from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.responses import FileResponse, Response
+from fastapi import Request
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from .importer import FormatError, parse_events
@@ -23,6 +25,7 @@ from .storage import DuplicateFileError, Store
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 DAY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "testserver"]
 
 
 def create_app(db_path: str | None = None, rules_path: str | None = None) -> FastAPI:
@@ -30,6 +33,24 @@ def create_app(db_path: str | None = None, rules_path: str | None = None) -> Fas
     rules = load_rules(rules_path or os.environ.get("FLEETDEMO_RULES", DEFAULT_RULES_PATH))
     app = FastAPI(title="Fleet Report Demo", version="0.1.0",
                   description="Demonstração com dados fictícios: importação conferida e relatórios de telemetria.")
+
+    # Proteções para uma API local sem autenticação:
+    # - TrustedHost recusa Host estranho (barra DNS rebinding);
+    # - requisições que alteram estado precisam vir da própria origem (barra CSRF
+    #   a partir de outro site aberto no navegador).
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
+
+    @app.middleware("http")
+    async def same_origin_for_writes(request: Request, call_next):
+        if request.method not in ("GET", "HEAD", "OPTIONS"):
+            origin = request.headers.get("origin") or request.headers.get("referer")
+            if origin:
+                host = origin.split("://", 1)[-1].split("/", 1)[0]
+                if host != request.headers.get("host"):
+                    return JSONResponse({"detail": "Origem não permitida."}, status_code=403)
+            elif request.headers.get("sec-fetch-site") not in (None, "same-origin", "none"):
+                return JSONResponse({"detail": "Origem não permitida."}, status_code=403)
+        return await call_next(request)
 
     @app.get("/api/rules")
     def get_rules():
