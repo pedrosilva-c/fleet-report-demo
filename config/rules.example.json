@@ -1,0 +1,9 @@
+{
+  "version": "exemplo-1",
+  "_aviso": "Valores ilustrativos para demonstração. Ajuste conforme a política da sua operação.",
+  "rules": {
+    "velocidade":   { "threshold": 90,  "unit": "km/h",  "label": "Velocidade acima do limite" },
+    "frenagem":     { "threshold": 3.5, "unit": "m/s²",  "label": "Frenagem brusca" },
+    "marcha_lenta": { "threshold": 10,  "unit": "min",   "label": "Motor ligado parado" }
+  }
+}
