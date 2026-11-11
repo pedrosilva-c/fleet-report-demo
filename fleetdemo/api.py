@@ -25,10 +25,11 @@ from .storage import DuplicateFileError, Store
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 DAY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "testserver"]
+DEFAULT_ALLOWED_HOSTS = ("127.0.0.1", "localhost", "[::1]")
 
 
-def create_app(db_path: str | None = None, rules_path: str | None = None) -> FastAPI:
+def create_app(db_path: str | None = None, rules_path: str | None = None,
+               allowed_hosts: tuple[str, ...] = DEFAULT_ALLOWED_HOSTS) -> FastAPI:
     store = Store(db_path or os.environ.get("FLEETDEMO_DB", "fleetdemo.db"))
     rules = load_rules(rules_path or os.environ.get("FLEETDEMO_RULES", DEFAULT_RULES_PATH))
     app = FastAPI(title="Fleet Report Demo", version="0.1.0",
@@ -38,7 +39,7 @@ def create_app(db_path: str | None = None, rules_path: str | None = None) -> Fas
     # - TrustedHost recusa Host estranho (barra DNS rebinding);
     # - requisições que alteram estado precisam vir da própria origem (barra CSRF
     #   a partir de outro site aberto no navegador).
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(allowed_hosts))
 
     @app.middleware("http")
     async def same_origin_for_writes(request: Request, call_next):

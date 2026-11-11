@@ -148,7 +148,8 @@ def test_day_without_import_is_missing_coverage_not_zero(rules):
 
 @pytest.fixture
 def client(tmp_path):
-    return TestClient(create_app(db_path=str(tmp_path / "api.db")))
+    # "testserver" é o Host do TestClient; só os testes o permitem
+    return TestClient(create_app(db_path=str(tmp_path / "api.db"), allowed_hosts=("testserver",)))
 
 
 def test_api_end_to_end(client, tmp_path):
@@ -216,3 +217,11 @@ def test_cross_origin_writes_are_blocked(client):
 
 def test_unknown_host_header_is_rejected(client):
     assert client.get("/api/rules", headers={"Host": "rebind.example"}).status_code == 400
+
+
+def test_default_hosts_exclude_testserver(tmp_path):
+    from fleetdemo.api import DEFAULT_ALLOWED_HOSTS
+    assert "testserver" not in DEFAULT_ALLOWED_HOSTS
+    prod = TestClient(create_app(db_path=str(tmp_path / "p.db")))
+    assert prod.get("/api/rules").status_code == 400  # Host "testserver" recusado
+    assert prod.get("/api/rules", headers={"Host": "127.0.0.1:8000"}).status_code == 200

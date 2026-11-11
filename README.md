@@ -73,7 +73,7 @@ Variáveis opcionais: `FLEETDEMO_DB` (caminho do banco SQLite, padrão `fleetdem
 .\.venv\Scripts\python.exe -m pytest
 ```
 
-**19 testes OK (11/11/2026).** Eles cobrem:
+**20 testes OK (11/11/2026).** Eles cobrem:
 
 - determinismo do gerador e uso só de identificadores fictícios;
 - limite inclusivo e validação do arquivo de regras;
