@@ -1,10 +1,12 @@
+<img src="docs/assets/cover.png" alt="Fleet Report Demo — importação conferida de planilhas e relatórios diários" width="100%">
+
 # Fleet Report Demo
 
 > **Demonstração independente com dados 100% fictícios.** Foi escrita do zero como projeto de portfólio, inspirada num tipo de problema que conheci no trabalho. **Não contém código, regras, dados, documentos nem nomes de nenhuma empresa**, e os limites das regras são ilustrativos.
 
 Aplicação local que **importa planilhas de eventos de telemetria de frota, confere cada linha e gera relatórios diários** em tela, XLSX e PDF.
 
-![Relatório diário com indicadores, ranking por veículo e ocorrências por hora](docs/screenshot-relatorio.png)
+**[Portfólio](https://pedrosilva-c.github.io/portfolio/)** · **[Perfil no GitHub](https://github.com/pedrosilva-c)**
 
 ## Problema
 
@@ -15,6 +17,26 @@ Relatórios operacionais montados à mão a partir de planilhas exportadas costu
 3. Um dia sem arquivo aparece como "zero ocorrências".
 
 Esta demo trata exatamente esses três pontos.
+
+## Funcionalidades
+
+- Importação de **CSV** (separador `;` ou `,`, vírgula decimal) e **XLSX**, com conferência linha a linha e o motivo de cada rejeição.
+- Recusa do mesmo arquivo (SHA-256) e de eventos já importados por outro arquivo.
+- Reversão de lotes, mantendo o registro com status `revertido`.
+- Relatório diário em tela, **XLSX** (3 abas) e **PDF**: resumo, ocorrências por tipo e por hora, ranking por veículo.
+- Dias sem importação aparecem como *cobertura ausente*, nunca como zero.
+- Regras com limites configuráveis em JSON e versão exibida no relatório.
+- Gerador de planilhas fictícias com semente fixa e 5 linhas inválidas de propósito.
+
+## Tecnologias
+
+Python · FastAPI · SQLite · openpyxl · fpdf2 · pytest · HTML/CSS/JavaScript
+
+## Demonstração
+
+Relatório diário gerado a partir da amostra fictícia:
+
+<img src="docs/screenshot-relatorio.png" alt="Relatório diário com indicadores, ranking por veículo e ocorrências por hora" width="100%">
 
 ## Decisões de projeto
 
@@ -85,16 +107,14 @@ Variáveis opcionais: `FLEETDEMO_DB` (caminho do banco SQLite, padrão `fleetdem
 
 A interface web também foi testada manualmente no Chromium: importação da amostra (240 aceitas e 5 rejeitadas com os motivos), relatório, downloads e nenhum erro no console.
 
-## Limitações
+## Limitações e status
+
+**Status atual: funcional como demonstração local.** Dados 100% fictícios.
 
 - Demonstração local, **sem autenticação**: não exponha na rede. Como proteção mínima, só aceita `Host` 127.0.0.1/localhost (contra DNS rebinding), recusa requisições de escrita vindas de outra origem (contra CSRF) e prefixa com apóstrofo os textos importados que começam com `= + - @` antes de gravá-los no XLSX (contra injeção de fórmula).
 - Sem fuso horário: os horários são tratados como locais.
 - Três tipos de evento fixos (`velocidade`, `frenagem`, `marcha_lenta`); só os limites são configuráveis.
 - A interface é propositalmente simples (HTML e JavaScript sem framework), para manter a demo sem etapa de build.
-
-## Tecnologias
-
-Python · FastAPI · SQLite · openpyxl · fpdf2 · pytest · HTML/CSS/JavaScript
 
 ## Autor
 
