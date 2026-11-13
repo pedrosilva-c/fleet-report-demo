@@ -6,7 +6,7 @@
 
 Aplicação local que **importa planilhas de eventos de telemetria de frota, confere cada linha e gera relatórios diários** em tela, XLSX e PDF.
 
-**[Portfólio](https://pedrosilva-c.github.io/portfolio/)** · **[Perfil no GitHub](https://github.com/pedrosilva-c)**
+**[Portfólio](https://pedro-osaka.github.io/portfolio/)** · **[Perfil no GitHub](https://github.com/Pedro-Osaka)**
 
 ## Problema
 
@@ -74,7 +74,7 @@ A documentação interativa da API fica em `http://127.0.0.1:8000/docs` (gerada 
 Requisitos: Python 3.11+.
 
 ```powershell
-git clone https://github.com/pedrosilva-c/fleet-report-demo.git
+git clone https://github.com/Pedro-Osaka/fleet-report-demo.git
 cd fleet-report-demo
 py -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
@@ -118,4 +118,4 @@ A interface web também foi testada manualmente no Chromium: importação da amo
 
 ## Autor
 
-**Pedro Henrique da Silva Pereira** · [Portfólio](https://pedrosilva-c.github.io/portfolio/) · [LinkedIn](https://www.linkedin.com/in/pedrosilva-sistemas/)
+**Pedro Henrique da Silva Pereira** · [Portfólio](https://pedro-osaka.github.io/portfolio/) · [LinkedIn](https://www.linkedin.com/in/pedrosilva-sistemas/)
